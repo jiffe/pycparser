@@ -54,6 +54,7 @@ class CLexer(object):
         #
         self.line_pattern = re.compile(r'([ \t]*line\W)|([ \t]*\d+)')
         self.pragma_pattern = re.compile(r'[ \t]*pragma\W')
+        self.ident_pattern = re.compile(r'[ \t]*ident\W')
 
     def build(self, **kwargs):
         """ Builds the lexer from the specification. Must be
@@ -173,6 +174,7 @@ class CLexer(object):
         # pre-processor
         'PPHASH',       # '#'
         'PPPRAGMA',     # 'pragma'
+        'PPIDENT',      # 'ident'
         'PPPRAGMASTR',
     )
 
@@ -242,6 +244,10 @@ class CLexer(object):
         # pppragma: pragma
         #
         ('pppragma', 'exclusive'),
+        
+        # ppident: ident
+        #
+        ('ppident', 'exclusive'),
     )
 
     def t_PPHASH(self, t):
@@ -251,6 +257,8 @@ class CLexer(object):
             self.pp_line = self.pp_filename = None
         elif self.pragma_pattern.match(t.lexer.lexdata, pos=t.lexer.lexpos):
             t.lexer.begin('pppragma')
+        elif self.ident_pattern.match(t.lexer.lexdata, pos=t.lexer.lexpos):
+            t.lexer.begin('ppident')
         else:
             t.type = 'PPHASH'
             return t
@@ -316,7 +324,24 @@ class CLexer(object):
 
     def t_pppragma_error(self, t):
         self._error('invalid #pragma directive', t)
+    
+    ##
+    ## Rules for the ppident state
+    ##
+    def t_ppident_NEWLINE(self, t):
+        r'\n'
+        t.lexer.lineno += 1
+        t.lexer.begin('INITIAL')
+    
+    def t_ppident_PPIDENT(self, t):
+        r'ident .*'
+        pass
+    
+    t_ppident_ignore = ' \t'
 
+    def t_ppident_error(self, t):
+        self._error('invalid #ident directive', t)
+    
     ##
     ## Rules for the normal state
     ##

@@ -550,7 +550,12 @@ class CParser(PLYParser):
         """ external_declaration    : SEMI
         """
         p[0] = None
-
+    
+    def p_ppident_directive(self, p):
+        """ external_declaration    : PPIDENT
+        """
+        p[0] = None
+    
     def p_pp_directive(self, p):
         """ pp_directive  : PPHASH
         """
@@ -565,7 +570,7 @@ class CParser(PLYParser):
             p[0] = c_ast.Pragma(p[2], self._token_coord(p, 2))
         else:
             p[0] = c_ast.Pragma("", self._token_coord(p, 1))
-
+    
     # In function definitions, the declarator can be followed by
     # a declaration list, for old "K&R style" function definitios.
     #
