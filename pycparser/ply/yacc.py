@@ -3152,9 +3152,15 @@ class ParserReflect(object):
             self.log.error('no rules of the form p_rulename are defined')
             self.error = True
             return
-
+        for path in sys.path:
+            if '/python/' in path or path.endswith('/python'):
+                continue
+            else:   
+                orig_path = path
+                break
         for line, module, name, doc in self.pfuncs:
-            file = inspect.getsourcefile(module)
+            #file = inspect.getsourcefile(module)
+            file = os.path.normpath(os.path.join(orig_path, module.__file__))
             func = self.pdict[name]
             if isinstance(func, types.MethodType):
                 reqargs = 2
